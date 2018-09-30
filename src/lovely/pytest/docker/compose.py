@@ -55,9 +55,9 @@ class Services(object):
     https://github.com/AndreLouisCaron/pytest-docker
     """
 
-    def __init__(self, compose_files, project_name='pytest'):
+    def __init__(self, compose_files, project_name='pytest', sudo=False):
         self._docker_compose = DockerComposeExecutor(
-            compose_files, project_name
+            compose_files, project_name, sudo
         )
         self._services = {}
         self.docker_ip = docker_ip()
@@ -143,12 +143,16 @@ class Services(object):
 
 
 class DockerComposeExecutor(object):
-    def __init__(self, compose_files, project_name):
+    def __init__(self, compose_files, project_name, sudo=False):
         self._compose_files = compose_files
         self._project_name = project_name
+        self._sudo = sudo
 
     def execute(self, *subcommand):
-        command = ["docker-compose"]
+        command = []
+        if self._sudo:
+            command.append("sudo")
+        command.append("docker-compose")
         for compose_file in self._compose_files:
             command.append('-f')
             command.append(compose_file)

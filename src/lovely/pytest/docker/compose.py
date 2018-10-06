@@ -61,6 +61,7 @@ class Services(object):
         )
         self._services = {}
         self.docker_ip = docker_ip()
+        self._started = False
 
     def start(self, *services):
         """Ensures that the given services are started via docker compose.
@@ -68,6 +69,7 @@ class Services(object):
         :param services: the names of the services as defined in compose file
         """
         self._docker_compose.execute('up', '--build', '-d', *services)
+        self._started = True
 
     def exec(self, service, *cmd):
         """Execute a command inside a docker container.
@@ -96,8 +98,9 @@ class Services(object):
         )
         return public_port
 
-    def shutdown(self):
-        self._docker_compose.execute('down', '-v')
+    def shutdown(self, even_if_not_started=False):
+        if self._started or even_if_not_started:
+            self._docker_compose.execute('down', '-v')
 
     def port_for(self, service, port):
         """Get the effective bind port for a service."""
